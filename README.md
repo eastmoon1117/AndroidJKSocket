@@ -1,0 +1,2 @@
+# AndroidJKSocket
+Android进程间socket通信，daemon的c进程负责管理
