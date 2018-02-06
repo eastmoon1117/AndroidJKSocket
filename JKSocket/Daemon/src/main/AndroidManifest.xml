@@ -1,2 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jared.daemon" />
+    package="com.jared.daemon" >
+    <application>
+        <service
+            android:name="com.jared.daemon."
+            android:process=":daemon"
+            android:exported="true" >
+        </service>
+    </application>
+</manifest>
+

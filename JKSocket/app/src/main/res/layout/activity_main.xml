@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.jared.jnidaemon.MainActivity">
+    tools:context="com.jared.jksocket.MainActivity">
 
     <TextView
         android:id="@+id/sample_text"
@@ -19,6 +19,14 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/sample_text"
         android:text="Start Daemon"
+        android:layout_margin="10dp"/>
+
+    <TextView
+        android:id="@+id/register_socket"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/start_daemon"
+        android:text="Register Socket"
         android:layout_margin="10dp"/>
 
 </RelativeLayout>

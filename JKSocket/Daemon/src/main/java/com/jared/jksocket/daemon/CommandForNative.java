@@ -1,4 +1,4 @@
-package com.jared.daemon;
+package com.jared.jksocket.daemon;
 
 import android.content.Context;
 import android.content.res.AssetManager;

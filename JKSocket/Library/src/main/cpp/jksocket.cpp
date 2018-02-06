@@ -10,13 +10,12 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 
-#include "Hello.h"
 #include "log.h"
+#include "jksocket.h"
 
-#define PATH "/data/data/com.jared.jnidaemon/app_socket/localsocket"
+#define PATH "/data/data/com.jared.jksocket/app_socket/localsocket"
 
 JavaVM *g_jvm;
-pthread_t pt;
 static jobject sCallbacksObj = NULL;
 static JNIEnv *sCallbackEnv = NULL;
 
@@ -56,16 +55,6 @@ static bool IsValidCallbackThread() {
     return IsValidCallbackThreadEnvOnly();
 }
 
-extern "C"
-JNIEXPORT jstring JNICALL stringFromJNI(JNIEnv *env) {
-    std::string hello = "Hello from C++";
-
-    Hello *hello1 = new Hello();
-    hello = hello1->getHello();
-
-    return env->NewStringUTF(hello.c_str());
-}
-
 static void callback(int32_t type) {
     if (!IsValidCallbackThread()) {
         return;
@@ -78,12 +67,6 @@ static void callback(int32_t type) {
     );
 
     CheckExceptions(sCallbackEnv, __FUNCTION__);
-}
-
-jint sumFromJNI(jint a, jint b) {
-
-    Hello *sum = new Hello();
-    return sum->sum(a, b);
 }
 
 void init(JNIEnv *env, jobject instance) {
@@ -168,20 +151,114 @@ void *runMethod(void *args) {
     pthread_exit(0);
 }
 
+int find_fd_by_id(jstring dest) {
+    int i = 0;
+    for(i  =0; i < CLIENT_NUM; i++) {
+        if (client_map[i] == NULL) continue;
+        if (strcmp((const char *) client_map[i], (const char *) dest) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int socketSend(jstring dest, jstring data, jint cmd) {
+    char snd_buf[1024];
+    memset(snd_buf, 0, 1024);
+    strcpy(snd_buf, (const char *) data);
+    int connect_fd = find_fd_by_id(dest);
+    int ret = write(connect_fd, snd_buf, sizeof(snd_buf));
+    if (ret < 0) {
+        LOG_E("%s: write error", __FUNCTION__);
+        return -1;
+    }
+    return 0;
+}
+
+int create_socket() {
+    //creat unix socket
+    int connect_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (connect_fd < 0) {
+        LOG_D("cannot create communication socket");
+        return -1;
+    }
+    struct sockaddr_un address;
+    address.sun_family = AF_UNIX;
+    strcpy(address.sun_path, PATH);
+    //connect server
+    int ret = connect(connect_fd, (struct sockaddr *) &address, sizeof(address));
+    if (ret == -1) {
+        LOG_D("cannot connect to the server");
+        close(connect_fd);
+        return -1;
+    }
+
+    return connect_fd;
+}
+
+void *processClient(void *args) {
+
+    JavaVMAttachArgs jvmArgs = {
+            JNI_VERSION_1_6,
+            /* group */ NULL
+    };
+
+    jint attachResult = g_jvm->AttachCurrentThread(&sCallbackEnv, &jvmArgs);
+    if (attachResult != 0) {
+        LOG_E("Callback thread attachment error: %d", attachResult);
+        return NULL;
+    }
+
+    jstring id = *((jstring *) args);
+    int client_fd = create_socket();
+    if (client_fd <= 0) return NULL;
+
+    client_map[client_fd] = id;
+    ssize_t str_len;
+    char message[1024];
+
+    while (1) {
+        if (EXIT_THREAD != 0) break;
+        str_len = read(client_fd, message, sizeof(message) - 1);
+        if (str_len == -1) {
+            LOG_E("read error, fd: %d, id: %s", client_fd, (char *)client_map[client_fd]);
+            break;
+        }
+        LOG_D("recv message, %s", message);
+
+    }
+
+    //Detach主线程
+    if (g_jvm->DetachCurrentThread() != JNI_OK) {
+        LOG_E("%s: DetachCurrentThread() failed", __FUNCTION__);
+        return NULL;
+    }
+    client_map[client_fd] = NULL;
+    //退出进程
+    pthread_exit(0);
+}
+
+pthread_t pt;
 void startThread() {
     //创建子线程
     pthread_create(&pt, NULL, runMethod, NULL);
 }
 
+pthread_t socket_pt;
+int registerSocket(jstring id) {
+    //创建子线程
+    pthread_create(&socket_pt, NULL, processClient, (void *) (&id));
+}
+
 //参数映射表
 static JNINativeMethod methods[] = {
-        {"nativeInit",      "()V",                  reinterpret_cast<void *>(init)},
-        {"nativeClassInit", "()V",                  reinterpret_cast<void *>(classInit)},
-        {"nativeCleanup",   "()V",                  reinterpret_cast<void *>(cleanup)},
+        {"nativeInit",      "()V",                   reinterpret_cast<void *>(init)},
+        {"nativeClassInit", "()V",                   reinterpret_cast<void *>(classInit)},
+        {"nativeCleanup",   "()V",                   reinterpret_cast<void *>(cleanup)},
 
-        {"stringFromJNI",   "()Ljava/lang/String;", reinterpret_cast<void *>(stringFromJNI)},
-        {"sumFromJNI",      "(II)I",                reinterpret_cast<void *>(sumFromJNI)},
-        {"startThread",     "()V",                  reinterpret_cast<void *>(startThread)}
+        {"registerSocket",  "(Ljava/lang/String;)I", reinterpret_cast<void *>(registerSocket)},
+        //{"socketSend",  "(Ljava/lang/String;Ljava/lang/String;I)I", reinterpret_cast<void *>(socketSend)},
+        {"startThread",     "()V",                   reinterpret_cast<void *>(startThread)}
 };
 
 //为某一个类注册本地方法，调运JNI注册方法

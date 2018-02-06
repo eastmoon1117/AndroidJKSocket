@@ -7,7 +7,7 @@ import android.util.Log;
  */
 
 public class JKSocketNative {
-    // Used to load the 'native-lib' library on application startup.
+
     static {
         System.loadLibrary("jksocket");
     }
@@ -16,11 +16,11 @@ public class JKSocketNative {
     public native void nativeClassInit();
     public native void nativeCleanup();
 
-    public native String stringFromJNI();
-    public native int sumFromJNI(int a, int b);
     public native void startThread();
+    public native int registerSocket(String id);
+    public native int socketSend(String id, int cmd, String data);
 
     private void onCallback(int type) {
-        Log.d("NdkJniUtils", "Type:" + type);
+        Log.d("JKSocketNative", "Type:" + type);
     }
 }
