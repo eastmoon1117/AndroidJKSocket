@@ -6,24 +6,25 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.jared.daemon.Daemon;
+import com.jared.jksocket.library.JKSocketNative;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView tv;
-    NdkJniUtils jniUtils = new NdkJniUtils();
+    JKSocketNative jkSocketNative = new JKSocketNative();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        jniUtils.nativeInit();
-        jniUtils.nativeClassInit();
-        jniUtils.startThread();
+        jkSocketNative.nativeInit();
+        jkSocketNative.nativeClassInit();
+        jkSocketNative.startThread();
 
         // Example of a call to a native method
         tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(jniUtils.stringFromJNI() + ":" + jniUtils.sumFromJNI(4, 3));
+        tv.setText(jkSocketNative.stringFromJNI() + ":" + jkSocketNative.sumFromJNI(4, 3));
 
         findViewById(R.id.start_daemon).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,6 +39,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        jniUtils.nativeCleanup();
+        jkSocketNative.nativeCleanup();
     }
 }

@@ -1,5 +1,5 @@
 //
-// Created by huaixi on 2018/1/27.
+// Created by jared on 2018/1/27.
 //
 #include <string>
 #include "hello.h"
@@ -9,7 +9,7 @@ using namespace std;
 Hello::Hello() {}
 
 string Hello::getHello() {
-    return "Hello Huaixi";
+    return "Hello JKSocket";
 }
 
 int Hello::sum(int a, int b) {

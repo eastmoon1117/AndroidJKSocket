@@ -1,4 +1,4 @@
-package com.jared.jnidaemon;
+package com.jared.jksocket.library;
 
 import android.util.Log;
 
@@ -6,16 +6,12 @@ import android.util.Log;
  * Created by huaixi on 2018/2/3.
  */
 
-public class NdkJniUtils {
+public class JKSocketNative {
     // Used to load the 'native-lib' library on application startup.
     static {
-        System.loadLibrary("native-lib");
+        System.loadLibrary("jksocket");
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
     public native void nativeInit();
     public native void nativeClassInit();
     public native void nativeCleanup();

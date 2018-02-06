@@ -14,7 +14,6 @@
 #include "log.h"
 
 #define PATH "/data/data/com.jared.jnidaemon/app_socket/localsocket"
-//#define PATH "/data/local/tmp/localsocket"
 
 JavaVM *g_jvm;
 pthread_t pt;
@@ -124,7 +123,7 @@ int socket() {
     address.sun_family = AF_UNIX;
     strcpy(address.sun_path, PATH);
     //connect server
-    int ret = connect(connect_fd, (struct sockaddr*) &address, sizeof(address));
+    int ret = connect(connect_fd, (struct sockaddr *) &address, sizeof(address));
     if (ret == -1) {
         LOG_D("cannot connect to the server");
         close(connect_fd);
@@ -195,7 +194,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
 
     g_jvm = vm; //用于后面获取JNIEnv
-    jclass clazz = env->FindClass("com/jared/jnidaemon/NdkJniUtils");  //获取Java
+    jclass clazz = env->FindClass("com/jared/jksocket/library/JKSocketNative");  //获取Java
 
     //注册Native方法
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof((methods)[0])) < 0) {

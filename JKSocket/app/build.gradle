@@ -11,24 +11,11 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++11"
-            }
-        }
-//        ndk {
-//            abiFilters  "armeabi"  // 指定要ndk需要兼容的架构(这样其他依赖包里mips,x86,armeabi,arm-v8之类的so会被过滤掉)
-//        }
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
         }
     }
 }
@@ -39,4 +26,5 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
     compile project(path: ':Daemon')
+    compile project(path: ':Library')
 }
