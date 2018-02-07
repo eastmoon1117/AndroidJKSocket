@@ -7,6 +7,7 @@
 
 #include "log.h"
 #define CLIENT_NUM 100
+#define CLIENT_LENGTH 128
 jstring client_map[CLIENT_NUM];
 
 #endif //JKSOCKET_JKSOCKET_H

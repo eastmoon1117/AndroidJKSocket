@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 jkSocketNative.registerSocket("com.jared.jksocket.library.JKSocketNative");
+                jkSocketNative.socketSend("com.jared.jksocket.library.JKSocketNative", "client message", 1);
             }
         });
 

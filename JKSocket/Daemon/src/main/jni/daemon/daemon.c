@@ -22,10 +22,13 @@
 #define PATH_END "/app_socket/localsocket"
 char package_name[128];
 char socket_path[120];
+int server_sockfd;
 
 /* signal term handler */
 static void sigterm_handler(int signo) {
     LOGD(LOG_TAG, "handle signal: %d ", signo);
+    if (server_sockfd > 0)
+        close(server_sockfd);
 }
 
 void *client_process(void *args) {
@@ -67,7 +70,7 @@ int create_socket_server(int client_num) {
     unlink(PATH);
 
     /* create a socket */
-    int server_sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    server_sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_sockfd < 0) {
         LOGE(LOG_TAG, "socket error!");
         return -1;
@@ -79,7 +82,7 @@ int create_socket_server(int client_num) {
 
     /* bind with the local file */
     if (bind(server_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) != 0) {
-        LOGE(LOG_TAG, "binder error!");
+        LOGE(LOG_TAG, "binder error %s !", socket_path);
         return -1;
     }
 
