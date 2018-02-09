@@ -151,27 +151,24 @@ void *runMethod(void *args) {
     pthread_exit(0);
 }
 
-int find_fd_by_id(JNIEnv *env, jstring dest) {
+int find_fd_by_id(JNIEnv *env, jint src) {
     int i = 0;
     for (i = 1; i < CLIENT_NUM; i++) {
-        if (client_map[i] == NULL) continue;
-        //LOG_D("client map: %s --- %s", client_map[i], dest);
-        //const char *str = env->GetStringUTFChars(client_map[i], NULL);
-
-        if (client_map[i] == dest)
+        if (client_map[i] == 0) continue;
+        if (client_map[i] == src)
             return i;
     }
     return -1;
 }
 
-int socketSend(JNIEnv *env, jobject obj, jstring dest, jstring data, jint cmd) {
+int socketSend(JNIEnv *env, jobject obj, jint src, jint dest, jint cmd, jstring data) {
     char snd_buf[1024];
     memset(snd_buf, 0, 1024);
 
-    int connect_fd = find_fd_by_id(env, dest);
+    int connect_fd = find_fd_by_id(env, src);
 
-    const char *str1 = env->GetStringUTFChars(dest, NULL);
-    LOG_D("dest: %s, connect_id: %d", str1, connect_fd);
+    //const char *str1 = env->GetStringUTFChars(src, NULL);
+    //LOG_D("dest: %s, connect_id: %d", str1, connect_fd);
 
     const char *str = env->GetStringUTFChars(data, NULL);
     LOG_D("data: %s, connect_id: %d", str, connect_fd);
@@ -261,10 +258,10 @@ void startThread() {
 
 pthread_t socket_pt;
 
-int registerSocket(JNIEnv *env, jobject obj, jstring id) {
+int registerSocket(JNIEnv *env, jobject obj, jint id) {
     //创建子线程
     client_map[0] = id;
-    if(find_fd_by_id(env, id) != -1) {
+    if (find_fd_by_id(env, id) != -1) {
         LOG_E("%s: already registered", __FUNCTION__);
         return -1;
     }
@@ -274,13 +271,13 @@ int registerSocket(JNIEnv *env, jobject obj, jstring id) {
 
 //参数映射表
 static JNINativeMethod methods[] = {
-        {"nativeInit",      "()V",                                      reinterpret_cast<void *>(init)},
-        {"nativeClassInit", "()V",                                      reinterpret_cast<void *>(classInit)},
-        {"nativeCleanup",   "()V",                                      reinterpret_cast<void *>(cleanup)},
+        {"nativeInit",      "()V",                      reinterpret_cast<void *>(init)},
+        {"nativeClassInit", "()V",                      reinterpret_cast<void *>(classInit)},
+        {"nativeCleanup",   "()V",                      reinterpret_cast<void *>(cleanup)},
 
-        {"registerSocket",  "(Ljava/lang/String;)I",                    reinterpret_cast<void *>(registerSocket)},
-        {"socketSend",      "(Ljava/lang/String;Ljava/lang/String;I)I", reinterpret_cast<void *>(socketSend)},
-        {"startThread",     "()V",                                      reinterpret_cast<void *>(startThread)}
+        {"registerSocket",  "(I)I",                     reinterpret_cast<void *>(registerSocket)},
+        {"socketSend",      "(IIILjava/lang/String;)I", reinterpret_cast<void *>(socketSend)},
+        {"startThread",     "()V",                      reinterpret_cast<void *>(startThread)}
 };
 
 //为某一个类注册本地方法，调运JNI注册方法

@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.jared.jksocket.constant.SocketCmd;
+import com.jared.jksocket.constant.SocketHandler;
 import com.jared.jksocket.daemon.Daemon;
 import com.jared.jksocket.library.JKSocketNative;
 
@@ -29,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.register_socket).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                jkSocketNative.registerSocket("com.jared.jksocket.library.JKSocketNative");
-                jkSocketNative.socketSend("com.jared.jksocket.library.JKSocketNative", "client message", 1);
+                jkSocketNative.registerSocket(SocketHandler.Test1);
+                jkSocketNative.socketSend(SocketHandler.Test1, SocketHandler.Test2, SocketCmd.CMD1, "client message");
             }
         });
 

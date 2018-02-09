@@ -17,8 +17,8 @@ public class JKSocketNative {
     public native void nativeCleanup();
 
     public native void startThread();
-    public native int registerSocket(String id);
-    public native int socketSend(String dest, String data, int cmd);
+    public native int registerSocket(int id);
+    public native int socketSend(int src, int dest, int cmd, String data);
 
     private void onCallback(int type) {
         Log.d("JKSocketNative", "Type:" + type);
