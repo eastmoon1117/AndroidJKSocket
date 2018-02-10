@@ -21,8 +21,9 @@
 #define PATH_PRE "/data/data/"
 #define PATH_END "/app_socket/localsocket"
 char package_name[128];
-char socket_path[120];
+char socket_path[128];
 int server_sockfd;
+int client_map[100];
 
 /* signal term handler */
 static void sigterm_handler(int signo) {
@@ -67,7 +68,7 @@ void *client_process(void *args) {
 
 int create_socket_server(int client_num) {
     /* delete the socket file */
-    unlink(PATH);
+    unlink(socket_path);
 
     /* create a socket */
     server_sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -89,7 +90,7 @@ int create_socket_server(int client_num) {
     /* listen */
     listen(server_sockfd, client_num);
 
-    char ch[1024];
+    char ch[BUFFER_LENGTH];
     int client_sockfd;
     struct sockaddr_un client_addr;
     socklen_t len = sizeof(client_addr);
@@ -121,7 +122,6 @@ void args_process(int argc, char *argv[]) {
     strcpy(socket_path, PATH_PRE);
     strcat(socket_path, package_name);
     strcat(socket_path, PATH_END);
-
 }
 
 int main(int argc, char *argv[]) {

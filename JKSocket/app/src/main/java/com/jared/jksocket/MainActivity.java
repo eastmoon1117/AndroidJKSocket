@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 jkSocketNative.registerSocket(SocketHandler.Test1);
-                jkSocketNative.socketSend(SocketHandler.Test1, SocketHandler.Test2, SocketCmd.CMD1, "client message");
+                jkSocketNative.socketSend(SocketHandler.Test1, SocketHandler.Test2, SocketCmd.CMD1, "I arm from test1");
             }
         });
 
