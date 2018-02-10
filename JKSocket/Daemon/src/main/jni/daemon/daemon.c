@@ -24,12 +24,11 @@ char package_name[128];
 char socket_path[128];
 int server_sockfd;
 int client_map[100];
+pthread_t thread_id;
 
 /* signal term handler */
 static void sigterm_handler(int signo) {
     LOGD(LOG_TAG, "handle signal: %d ", signo);
-    if (server_sockfd > 0)
-        close(server_sockfd);
 }
 
 void *client_process(void *args) {
@@ -99,12 +98,12 @@ int create_socket_server(int client_num) {
         /* accept a connection */
         client_sockfd = accept(server_sockfd, (struct sockaddr *) &client_addr, &len);
 
-        pthread_t thread_id;
         if (pthread_create(&thread_id, NULL, (void *) (&client_process),
                            (void *) (&client_sockfd)) == -1) {
             LOGE(LOG_TAG, "pthread_create error!");
             continue;
         }
+        if (client_sockfd < 0) break;
     }
 
     return 0;

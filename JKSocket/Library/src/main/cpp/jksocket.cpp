@@ -87,12 +87,20 @@ void classInit(JNIEnv *env) {
     );
 }
 
+void clean_client() {
+    for (int i = 0; i < CLIENT_NUM; ++i) {
+        client_map[i] = -1;
+    }
+}
+
 void cleanup(JNIEnv *env) {
     EXIT_THREAD = 1;
     if (sCallbacksObj != NULL) {
         env->DeleteGlobalRef(sCallbacksObj);
         sCallbacksObj = NULL;
     }
+
+    clean_client();
 }
 
 int socket() {
