@@ -12,6 +12,7 @@
 
 #include "log.h"
 #include "jksocket.h"
+#include "protocol.h"
 
 #define PATH "/data/data/com.jared.jksocket/app_socket/localsocket"
 
@@ -175,13 +176,18 @@ int socketSend(JNIEnv *env, jobject obj, jint src, jint dest, jint cmd, jstring 
 
     int connect_fd = find_fd_by_id(env, src);
 
-    //const char *str1 = env->GetStringUTFChars(src, NULL);
-    //LOG_D("dest: %s, connect_id: %d", str1, connect_fd);
-
     const char *str = env->GetStringUTFChars(data, NULL);
-    LOG_D("data: %s, connect_id: %d", str, connect_fd);
+    LOG_D("data: %s, connect_fd: %d, src:%d, dest:%d, cmd:%d ", str, connect_fd, src, dest, cmd);
 
-    strcpy(snd_buf, str);
+    Protocol *aProtocol = new Protocol();
+    string send_data = aProtocol->combination_protocol((char)src, (char)dest, (char)cmd, str);
+
+    Protocol *bProtocol = new Protocol();
+    bProtocol->parse_protocol(send_data);
+    LOG_D("src: %d, dest: %d, cmd: %d, data:%s", bProtocol->getSource(), bProtocol->getDestination(),
+        bProtocol->getCmd(), bProtocol->getDatas().data());
+
+    strcpy(snd_buf, send_data.data());
 
     ssize_t ret = write(connect_fd, snd_buf, strlen(snd_buf));
     if (ret < 0) {
@@ -212,7 +218,7 @@ int create_socket() {
     return connect_fd;
 }
 
-void *processClient(void *args) {
+void *process_client(void *args) {
 
     JavaVMAttachArgs jvmArgs = {
             JNI_VERSION_1_6,
@@ -240,7 +246,7 @@ void *processClient(void *args) {
         if (EXIT_THREAD != 0) break;
         str_len = read(client_fd, message, sizeof(message) - 1);
         if (str_len == -1) {
-            LOG_E("read error, fd: %d, id: %s", client_fd, (char *) client_map[client_fd]);
+            LOG_E("read error, fd: %d, id: %d", client_fd, client_map[client_fd]);
             break;
         }
         LOG_D("recv message, %s", message);
@@ -252,7 +258,7 @@ void *processClient(void *args) {
         LOG_E("%s: DetachCurrentThread() failed", __FUNCTION__);
         return NULL;
     }
-    client_map[client_fd] = NULL;
+    client_map[client_fd] = -1;
     //退出进程
     pthread_exit(0);
 }
@@ -273,7 +279,7 @@ int registerSocket(JNIEnv *env, jobject obj, jint id) {
         LOG_E("%s: already registered", __FUNCTION__);
         return -1;
     }
-    pthread_create(&socket_pt, NULL, processClient, NULL);
+    pthread_create(&socket_pt, NULL, process_client, NULL);
     return 0;
 }
 
