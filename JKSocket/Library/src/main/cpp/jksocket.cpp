@@ -180,12 +180,13 @@ int socketSend(JNIEnv *env, jobject obj, jint src, jint dest, jint cmd, jstring 
     LOG_D("data: %s, connect_fd: %d, src:%d, dest:%d, cmd:%d ", str, connect_fd, src, dest, cmd);
 
     Protocol *aProtocol = new Protocol();
-    string send_data = aProtocol->combination_protocol((char)src, (char)dest, (char)cmd, str);
+    string send_data = aProtocol->combination_protocol((char) src, (char) dest, (char) cmd, str);
 
     Protocol *bProtocol = new Protocol();
     bProtocol->parse_protocol(send_data);
-    LOG_D("src: %d, dest: %d, cmd: %d, data:%s", bProtocol->getSource(), bProtocol->getDestination(),
-        bProtocol->getCmd(), bProtocol->getDatas().data());
+    LOG_D("src: %d, dest: %d, cmd: %d, data:%s", bProtocol->getSource(),
+          bProtocol->getDestination(),
+          bProtocol->getCmd(), bProtocol->getDatas().data());
 
     strcpy(snd_buf, send_data.data());
 

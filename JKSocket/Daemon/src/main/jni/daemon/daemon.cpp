@@ -11,9 +11,13 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <arpa/inet.h>
+#include <string>
+#include "protocol.h"
 #include "log.h"
 
-#define LOG_TAG         "Daemon"
+using namespace std;
+
+#define LOG_TAG       "Daemon"
 #define BUFFER_LENGTH 1024
 
 //创建的localsocket的绝对路径
@@ -54,7 +58,16 @@ void *client_process(void *args) {
             LOGE(LOG_TAG, "Quit command!");
             break;
         }
+
         LOGD(LOG_TAG, "read from client : %s", data_recv);
+
+        Protocol *aProtocol = new Protocol();
+        aProtocol->parse_protocol(data_recv);
+
+        LOGD(LOG_TAG, "src: %d, dest: %d, cmd: %d, data:%s", aProtocol->getSource(),
+              aProtocol->getDestination(),
+              aProtocol->getCmd(), aProtocol->getDatas().data());
+
         if (write(fd, data_send, strlen(data_send)) == -1) {
             break;
         }
@@ -98,7 +111,7 @@ int create_socket_server(int client_num) {
         /* accept a connection */
         client_sockfd = accept(server_sockfd, (struct sockaddr *) &client_addr, &len);
 
-        if (pthread_create(&thread_id, NULL, (void *) (&client_process),
+        if (pthread_create(&thread_id, NULL, client_process,
                            (void *) (&client_sockfd)) == -1) {
             LOGE(LOG_TAG, "pthread_create error!");
             continue;
